@@ -7,19 +7,28 @@ on:
 
 jobs:
   dotnet_publish:
-    runs-on: 'ubuntu-latest'
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Code checkout
+      - name: Checkout code
         uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore src/Presentation/Nop.Web/Nop.Web.csproj
+
+      - name: Build project
+        run: dotnet build -c Release src/Presentation/Nop.Web/Nop.Web.csproj --no-restore
+
+      - name: Publish project
+        run: dotnet publish -c Release src/Presentation/Nop.Web/Nop.Web.csproj -o demo --no-build
+
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@v5
         with:
-          mysonar: ${{ secrets.SONAR_TOKEN }}
-          mysonar_url: ${{ secrets.SONAR_HOST_URL }}
-      - name: install dotnet
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "9.0.100"
-      - name: dotnet publish   
-        run: dotnet publish -c Release src/Presentation/Nop.Web/Nop.Web.csproj -o demo
+          token: ${{ secrets.SONAR_TOKEN }}
+          host-url: ${{ secrets.SONAR_HOST_URL }}
