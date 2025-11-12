@@ -3,34 +3,44 @@ name: mydotnet project
 on:
   push:
     branches:
-      - develop 
+      - develop
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REPOSITORY: dummyrepo
+  IMAGE_TAG: latest
+
 jobs:
   dotnet_publish:
-    runs-on: 'ubuntu-latest'
+    runs-on: ubuntu-latest
+
     steps:
-      - name: code checkout
+      - name: Checkout code
         uses: actions/checkout@v5
-      - name: aws configure
+
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: ECR login
+
+      - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-      - name: build and push
+
+      - name: Build, tag, and push image to ECR
         uses: docker/build-push-action@v6
-        run: |
-          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 137764817332.dkr.ecr.ap-south-1.amazonaws.com
-          docker image build -t dotnet:1.0 .
-          docker image tag dotnet:1.0 137764817332.dkr.ecr.ap-south-1.amazonaws.com/dummyrepo:latest
-          docker push 137764817332.dkr.ecr.ap-south-1.amazonaws.com/dummyrepo:latest
-      - name: EKS with manifestfile
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+      - name: Deploy to EKS
         uses: actions-hub/kubectl@master
         env:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      - uses: tale/kubectl-action@v1
-      - run: |
-          kubectl apply -f .
-          kubectl get po
-              
+        with:
+          args: |
+            apply -f .
+            get po
