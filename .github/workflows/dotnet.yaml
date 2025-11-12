@@ -1,6 +1,6 @@
 name: mydotnet project
 
-on:
+on: 
   push:
     branches:
       - develop
@@ -11,28 +11,57 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
-
-      - name: Restore dependencies
-        run: dotnet restore src/Presentation/Nop.Web/Nop.Web.csproj
-
-      - name: Build project
-        run: dotnet build -c Release src/Presentation/Nop.Web/Nop.Web.csproj --no-restore
-
-      - name: Publish project
-        run: dotnet publish -c Release src/Presentation/Nop.Web/Nop.Web.csproj -o demo --no-build
+          dotnet-version: '9.0.100'
 
       - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@v5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
-            -Dsonar.projectKey=my_project_key
-            -Dsonar.organization=my_organization
+            -Dsonar.organization=sravanthi569
+            -Dsonar.projectKey=Sravathi569_nopCommerce
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+      - name: Publish .NET project
+        run: dotnet publish -c Release src/Presentation/Nop.Web/Nop.Web.csproj -o sravs
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push Docker image
+        env:
+          ECR_REPOSITORY: mynewone
+          IMAGE_TAG: latest
+        run: |
+          docker build -t mynewone .
+          docker tag mynewone:latest 877560973663.dkr.ecr.us-east-1.amazonaws.com/mynewone:latest
+          docker push 877560973663.dkr.ecr.us-east-1.amazonaws.com/mynewone:latest
+           
+
+      # 3️⃣ Create and switch namespaces
+      - name: Create and switch namespaces
+        run: |
+          kubectl create namespace devnamespace --dry-run=client -o yaml | kubectl apply -f -
+          kubectl config set-context --current --namespace devnamespace
+
+      # 4️⃣ Deploy to EKS
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -f k8s/
+          kubectl rollout status deployment/nop-commerce-deployment
+          kubectl get svc
+     
