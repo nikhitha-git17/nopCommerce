@@ -19,7 +19,7 @@ jobs:
           dotnet-version: '9.0.100'
 
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v3
+        uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
              -Dsonar.organization=nikhitha-git17
@@ -30,6 +30,7 @@ jobs:
 
       - name: Publish .NET project
         run: dotnet publish -c Release src/Presentation/Nop.Web/Nop.Web.csproj -o sravs
+        
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
