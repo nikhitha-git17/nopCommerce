@@ -22,8 +22,12 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
-             -Dsonar.organization=nikhitha-git17
-             -Dsonar.projectKey=nikhitha-git17_nopCommerce
+            -Dsonar.organization=nikhitha-git17
+            -Dsonar.projectKey=nikhitha-git17_nopCommerce
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
@@ -52,7 +56,7 @@ jobs:
           docker tag task1:latest 137764817332.dkr.ecr.ap-south-1.amazonaws.com/task1:latest
           docker push 137764817332.dkr.ecr.ap-south-1.amazonaws.com/task1:latest
 
-          
+
       - name: Configure kubectl for EKS
         run: |
           aws eks update-kubeconfig --name hilarious-mongoose-1762925037 --region ap-south-1
