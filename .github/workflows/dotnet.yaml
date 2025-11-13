@@ -30,7 +30,7 @@ jobs:
 
       - name: Publish .NET project
         run: dotnet publish -c Release src/Presentation/Nop.Web/Nop.Web.csproj -o sravs
-        
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -45,13 +45,14 @@ jobs:
       - name: Build and Push Docker image to ECR
         env:
           ECR_REGISTRY: aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 137764817332.dkr.ecr.ap-south-1.amazonaws.com
-          ECR_REPOSITORY: githubrepo
+          ECR_REPOSITORY: task1
           IMAGE_TAG: latest
         run: |
-          docker build -t githubrepo .
-          docker tag githubrepo:latest 137764817332.dkr.ecr.ap-south-1.amazonaws.com/githubrepo:latest
-          docker push 137764817332.dkr.ecr.ap-south-1.amazonaws.com/githubrepo:latest
-            
+          docker build -t task1 .
+          docker tag task1:latest 137764817332.dkr.ecr.ap-south-1.amazonaws.com/task1:latest
+          docker push 137764817332.dkr.ecr.ap-south-1.amazonaws.com/task1:latest
+
+          
       - name: Configure kubectl for EKS
         run: |
           aws eks update-kubeconfig --name hilarious-mongoose-1762925037 --region ap-south-1
