@@ -43,6 +43,7 @@ jobs:
 
       - name: Build and Push Docker image
         env:
+          ECR_REGISTRY: aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 137764817332.dkr.ecr.ap-south-1.amazonaws.com
           ECR_REPOSITORY: githubrepo
           IMAGE_TAG: latest
         run: |
