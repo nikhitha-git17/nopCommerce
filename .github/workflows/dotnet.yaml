@@ -47,7 +47,7 @@ jobs:
           IMAGE_TAG: latest
         run: |
           docker build -t githubrepo .
-          docker tag 137764817332.dkr.ecr.ap-south-1.amazonaws.com/githubrepo:latest
+          docker tag githubrepo:latest 137764817332.dkr.ecr.ap-south-1.amazonaws.com/githubrepo:latest
           docker push 137764817332.dkr.ecr.ap-south-1.amazonaws.com/githubrepo:latest
             
       - name: Configure kubectl for EKS
